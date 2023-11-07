@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>kairi's profile</title>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .icon-container {
+            text-align: center;
+        }
+
+        .large-icon {
+            width: 150px;
+            height: 150px;
+            margin-bottom: 20px;
+        }
+
+        .small-icons-container {
+            display: flex;
+            justify-content: center;
+        }
+
+        .small-icon {
+            width: 50px;
+            height: 50px;
+            margin: 0 5px;
+        }
+
+        #waveCanvas {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 150px;
+            z-index: -1;
+        }
+
+        .icon {
+            transition: transform 0.3s ease;
+            display: inline-block;
+            margin: 10px;
+        }
+
+        .icon:hover {
+            transform: translateY(-5px) scale(1.1); /* Move up slightly and scale up */
+        }
+    </style>
+</head>
+<body>
+<div class="icon-container">
+    <!-- Large Icon -->
+    <a href="https://twitter.com/QA_kairi"><img src="image/kairi.png" alt="X" class="large-icon icon"></a>
+</div>
+
+<div class="small-icons-container">
+    <!-- Small Icons -->
+    <a href="https://note.com/kairiver">
+        <img src="image/note.png" alt="note" class="small-icon icon">
+    </a>
+    <a href="https://github.com/rmuraoka">
+        <img src="image/github-mark.png" alt="github" class="small-icon icon">
+    </a>
+    <a href="https://qiita.com/kairiver">
+        <img src="image/qiita.png" alt="giita" class="small-icon icon">
+    </a>
+</div>
+<div>
+    かいり/kairi
+</div>
+<div>
+    🦫 WEB Engineer→QA Engineer
+</div>
+<canvas id="waveCanvas"></canvas>
+<script>
+    const canvas = document.getElementById('waveCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = 250; // Wave height
+
+    let phase = 0;
+    const speed = 0.05; // Speed of wave
+    const amplitude = 30; // Wave amplitude
+    let wavelength = canvas.width / 10; // Wavelength of the wave
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+        ctx.fillStyle = 'rgba(135, 206, 250, 0.7)'; // Wave color with some transparency
+        ctx.beginPath(); // Start the path
+
+        // Draw the wave
+        for (let x = 0; x < canvas.width; x++) {
+            let y = Math.sin((x / wavelength) + phase) * amplitude + (canvas.height / 2);
+            ctx.lineTo(x, canvas.height - y); // Position the wave at the bottom
+        }
+
+        ctx.lineTo(canvas.width, canvas.height); // Draw down to the bottom right corner
+        ctx.lineTo(0, canvas.height); // Draw a line to the bottom left corner
+        ctx.fill(); // Fill the path
+
+        phase += speed; // Move the wave
+        requestAnimationFrame(animate); // Animate
+    }
+
+    animate();
+
+    window.addEventListener('resize', function () {
+        canvas.width = window.innerWidth; // Make sure the canvas covers the full width after resize
+        wavelength = canvas.width / 10; // Adjust wavelength on window resize
+        animate(); // Start the animation
+    });
+</script>
+</body>
+</html>
