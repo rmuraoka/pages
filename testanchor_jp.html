@@ -12,15 +12,6 @@
             align-items: center;
         }
 
-        #waveCanvas {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 150px;
-            z-index: -1;
-        }
-
         .toolDescription {
             text-align: center;
             margin-left: 2em;
@@ -39,6 +30,20 @@
             #toolImage {
                 max-width: 50%;
             }
+        }
+
+        .specialThanks {
+            margin-top: 2em;
+            margin-bottom: 3em;
+        }
+
+        .specialThanks a {
+            text-decoration: none;
+            color: #3366cc; /* リンクの色 */
+        }
+
+        .specialThanks a:hover {
+            text-decoration: underline; /* ホバー時にアンダーラインを表示して強調 */
         }
     </style>
 </head>
@@ -62,49 +67,12 @@
         TestAnchorは現在鋭意開発中です。
         ご興味のある方のコントリビュートをお待ちしています。
     </p>
-    <h3>special thanks</h3>
-    <p>
-        <a href="https://barus-dev-or-qa.notion.site/DB-CRUD-cfb5ef4a02c34da9b60685ede16c91ac">DBスキーマとCRUD表</a>
-    </p>
+    <div class="specialThanks">
+        <h3>コミュニティへの感謝</h3>
+        <p>
+            <a href="https://barus-dev-or-qa.notion.site/DB-CRUD-cfb5ef4a02c34da9b60685ede16c91ac">DBスキーマとCRUD表</a> by barus
+        </p>
+    </div>
 </div>
-<canvas id="waveCanvas"></canvas>
-<script>
-    const canvas = document.getElementById('waveCanvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = 250; // Wave height
-
-    let phase = 0;
-    const speed = 0.05; // Speed of wave
-    const amplitude = 30; // Wave amplitude
-    let wavelength = canvas.width / 10; // Wavelength of the wave
-
-    function animate() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
-        ctx.fillStyle = 'rgba(135, 206, 250, 0.7)'; // Wave color with some transparency
-        ctx.beginPath(); // Start the path
-
-        // Draw the wave
-        for (let x = 0; x < canvas.width; x++) {
-            let y = Math.sin((x / wavelength) + phase) * amplitude + (canvas.height / 2);
-            ctx.lineTo(x, canvas.height - y); // Position the wave at the bottom
-        }
-
-        ctx.lineTo(canvas.width, canvas.height); // Draw down to the bottom right corner
-        ctx.lineTo(0, canvas.height); // Draw a line to the bottom left corner
-        ctx.fill(); // Fill the path
-
-        phase += speed; // Move the wave
-        requestAnimationFrame(animate); // Animate
-    }
-
-    animate();
-
-    window.addEventListener('resize', function () {
-        canvas.width = window.innerWidth; // Make sure the canvas covers the full width after resize
-        wavelength = canvas.width / 10; // Adjust wavelength on window resize
-        animate(); // Start the animation
-    });
-</script>
 </body>
 </html>
