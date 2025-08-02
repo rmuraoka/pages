@@ -1,0 +1,296 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>課題から探す開発プラクティス</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Helvetica Neue', sans-serif;
+            background: #ffffff;
+            color: #333;
+            padding: 2em;
+            max-width: 800px;
+            margin: auto;
+        }
+
+        h1, h2 {
+            color: #2c3e50;
+            margin-bottom: 0.5em;
+        }
+
+        form label {
+            display: inline-block;
+            margin: 0.4em 1em 0.4em 0;
+            cursor: pointer;
+        }
+
+        .practice-container {
+            margin-top: 1.5em;
+        }
+
+        .practice-card {
+            background: #f9fafb;
+            border-left: 5px solid #007acc;
+            border-radius: 8px;
+            padding: 1em 1.2em;
+            margin-bottom: 1em;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .practice-card.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .practice-name {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #007acc;
+            margin-bottom: 0.2em;
+        }
+
+        .footer {
+            margin-top: 3em;
+            font-size: 0.9em;
+            color: #aaa;
+            text-align: center;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 10;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 1.5em 2em;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .modal h3 {
+            margin-top: 0;
+            color: #007acc;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 0.5em;
+            right: 0.8em;
+            font-size: 1.2em;
+            color: #888;
+            cursor: pointer;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        @media screen and (max-width: 600px) {
+            body {
+                padding: 1em;
+            }
+
+            form label {
+                display: block;
+                margin: 0.6em 0;
+            }
+
+            .practice-card {
+                font-size: 0.95em;
+                padding: 0.8em 1em;
+            }
+
+            .modal-content {
+                width: 90%;
+                padding: 1em 1.2em;
+            }
+
+            .practice-name {
+                font-size: 1em;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            h2 {
+                font-size: 1.3em;
+            }
+
+            .footer {
+                font-size: 0.8em;
+                padding-bottom: 2em;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+<h1>📌 課題から選ぶ開発プラクティス</h1>
+<p>チームで直面している課題にチェックを入れてください（複数可）：</p>
+
+<form id="problemForm">
+    <label><input type="checkbox" name="problem" value="requirement_mismatch"> 要件があいまい</label>
+    <label><input type="checkbox" name="problem" value="not_essential"> テストしているのに本質的なバグを防げていない</label>
+    <label><input type="checkbox" name="problem" value="regression_prone"> デグレが多い</label>
+    <label><input type="checkbox" name="problem" value="code_complex"> コードが読みにくい／属人化している</label>
+    <label><input type="checkbox" name="problem" value="non_engineer_gap"> 非エンジニアとの認識齟齬がある</label>
+    <label><input type="checkbox" name="problem" value="slow_release"> 検証に時間がかかってリリースが遅れる</label>
+    <label><input type="checkbox" name="problem" value="frequent_change"> 仕様変更が頻繁にある</label>
+    <label><input type="checkbox" name="problem" value="domain_complex"> ドメインが複雑で理解しづらい</label>
+</form>
+
+<div class="practice-container">
+    <h2>🔧 おすすめのプラクティス</h2>
+    <div id="practiceList">
+        <p id="placeholder" style="color: #999;">ここにプラクティスが表示されます</p>
+    </div>
+</div>
+
+<div class="footer">
+    © 2025 Practice Picker. カスタマイズ自由です。
+</div>
+
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <h3 id="modalTitle"></h3>
+        <p id="modalBody"></p>
+    </div>
+</div>
+
+<script>
+    const practiceMap = {
+        requirement_mismatch: [
+            { name: 'ATDD（受け入れテスト駆動開発）', reason: '受け入れ条件を明確にして齟齬を防ぐ' },
+            { name: '実例マッピング', reason: '具体例で仕様を共有する対話型手法' }
+        ],
+        not_essential: [
+            { name: 'ユーザーストーリーマッピング', reason: 'ユーザーの体験を時系列で可視化し、価値のある機能を議論・優先順位づけする手法' },
+            { name: 'ドッグフーディング', reason: '自社で日常的に使用し、問題を早期に発見' },
+            { name: 'カナリアリリース', reason: '一部ユーザーで影響範囲を限定してリリース' },
+        ],
+        regression_prone: [
+            { name: 'TDD（テスト駆動開発）', reason: 'テスト駆動で堅牢な実装を導く' },
+            { name: 'CI＋自動テスト', reason: '継続的な検証でバグを早期検出' },
+        ],
+        code_complex: [
+            { name: 'クリーンコード', reason: '読みやすく保守しやすいコードスタイル' },
+            { name: 'リファクタリング習慣化', reason: '小さな改善を日常的に積み重ねる' }
+        ],
+        non_engineer_gap: [
+            { name: 'BDD（振る舞い駆動開発）', reason: '非エンジニアにも読める仕様記述を使う' },
+            { name: '実例マッピング', reason: '例を共有して共通理解を深める' }
+        ],
+        slow_release: [
+            { name: 'CI/CD（継続的インテグレーション／デリバリー）', reason: 'デプロイ工程の短縮と品質の安定化' },
+            { name: 'E2Eテスト自動化', reason: 'リリース前検証を迅速に行う' },
+        ],
+        frequent_change: [
+            { name: 'BDD（振る舞い駆動開発）', reason: '変更に強い振る舞いベースの開発' },
+            { name: 'モジュール分割設計', reason: '影響範囲を限定しやすい構造に' }
+        ],
+        domain_complex: [
+            { name: 'DDD（ドメイン駆動設計）', reason: 'ドメインの構造化と共通言語の導入' },
+            { name: 'ユビキタス言語の導入', reason: '全員が同じ意味で会話できる設計' }
+        ]
+    };
+
+    const quickStartMap = {
+        'ATDD（受け入れテスト駆動開発）': 'ビジネス側と一緒に受け入れ条件を洗い出し、それをテストとして書く。最初の1ストーリーから始めてみよう。',
+        '実例マッピング': 'ユーザーストーリーを「ルール・例・疑問」に分解してホワイトボードやMiroで整理。',
+        'ユーザーストーリーマッピング': 'ユーザーの行動とストーリーを横軸、優先度を縦軸に並べ、Miroなどで可視化して議論。',
+        'ドッグフーディング': '開発メンバー自身が日常的に使うことで本番さながらのフィードバックを得る。社内用アカウントで先行リリースなど。',
+        'カナリアリリース': 'トラフィックの一部だけを新バージョンに流す設定をCI/CDパイプラインに組み込む。',
+        'TDD（テスト駆動開発）': 'Red → Green → Refactor の3ステップで、小さな関数からテストを書いて進める。',
+        'CI＋自動テスト': 'GitHub ActionsやCircleCIでテスト実行を自動化し、毎回のpushで品質を担保。',
+        'クリーンコード': '命名・責務分離・コメントレスな構造を意識。既存コードの一部から始めるのが現実的。',
+        'リファクタリング習慣化': '毎週「改善デー」を作る、またはPRレビュー時に小リファクタリングを提案する運用に。',
+        'BDD（振る舞い駆動開発）': 'Given-When-Thenの形式で仕様を書く。CucumberやSpecFlowがツール候補。',
+        'CI/CD（継続的インテグレーション／デリバリー）': '手動デプロイを自動化するところから始める。GitHub ActionsやGitLab CIで構築可能。',
+        'E2Eテスト自動化': 'まずは主要なユースケースを1つ選び、PlaywrightやCypressで自動化を試してみる。',
+        'モジュール分割設計': 'ドメインや責務に応じてモジュールを分離。依存方向に注意してリファクタリング。',
+        'DDD（ドメイン駆動設計）': 'ユビキタス言語を使ってドメインモデルを作る。まずはエンティティとバリューオブジェクトの切り分けから。',
+        'ユビキタス言語の導入': '開発チームとビジネスチームで用語集を作る。ドキュメントやPRに一貫して使う習慣を。'
+    };
+
+    const checkboxes = document.querySelectorAll('input[name="problem"]');
+    const practiceList = document.getElementById('practiceList');
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    const placeholder = document.getElementById('placeholder');
+
+    checkboxes.forEach(cb => cb.addEventListener('change', updatePracticeList));
+
+    function updatePracticeList() {
+        const selected = Array.from(checkboxes)
+            .filter(cb => cb.checked)
+            .map(cb => cb.value);
+
+        const results = {};
+        selected.forEach(problem => {
+            (practiceMap[problem] || []).forEach(({ name, reason }) => {
+                results[name] = reason;
+            });
+        });
+
+        practiceList.innerHTML = '<p id="placeholder" style="color: #999;">ここにプラクティスが表示されます</p>';
+        const placeholderElem = document.getElementById('placeholder');
+
+        if (Object.keys(results).length === 0) {
+            placeholderElem.style.display = 'block';
+            return;
+        }
+
+        placeholderElem.style.display = 'none';
+
+        Object.entries(results).forEach(([name, reason], i) => {
+            const div = document.createElement('div');
+            div.className = 'practice-card';
+            div.innerHTML = `<div class="practice-name">${name}</div><div>${reason}</div>`;
+            div.addEventListener('click', () => openModal(name));
+            practiceList.appendChild(div);
+
+            setTimeout(() => {
+                div.classList.add('show');
+            }, 50 * i);
+        });
+    }
+
+    function openModal(practiceName) {
+        modalTitle.textContent = `${practiceName} のクイックスタート`;
+        modalBody.textContent = quickStartMap[practiceName] || '（準備中）';
+        modal.style.display = 'flex';
+    }
+
+    function closeModal() {
+        modal.style.display = 'none';
+    }
+
+    window.addEventListener('click', function(e) {
+        if (e.target === modal) closeModal();
+    });
+</script>
+
+</body>
+</html>
